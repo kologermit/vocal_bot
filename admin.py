@@ -158,6 +158,9 @@ def update_tests(bot: TeleBot, filepath: str, message: types.Message, user: Mode
 
 def get_tests_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_manager: DBManager):
     tests = db_manager.find_data(TestModel)
+    if not tests:
+        bot.send_message(user.telegram_id, "Тесты отсутствуют")
+        return
     wb = Workbook()
     for i, test in enumerate(tests):
         sheet = wb.create_sheet(str(i+1))
@@ -215,6 +218,9 @@ def update_theory(bot: TeleBot, filepath: str, callback: types.CallbackQuery, us
 
 def get_theory_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_manager: DBManager):
     theorys = db_manager.find_data(TheoryModel)
+    if not theorys:
+        bot.send_message(user.telegram_id, "Теория отсутствует")
+        return
     wb = Workbook()
     for i, theory in enumerate(theorys):
         sheet = wb.create_sheet(str(i))
