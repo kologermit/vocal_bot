@@ -3,4 +3,4 @@ services:
   bot:
     build: .
     volumes:
-      - ./:./
+      - ./:/app
