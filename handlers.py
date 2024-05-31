@@ -96,7 +96,7 @@ def menu(bot: TeleBot, message: types.Message, user: Model, db_manager: DBManage
         return to_tests(bot, message, user, db_manager)
     if message.text == menu_theory_button:
         return to_theory(bot, message, user, db_manager)
-    return True
+    return False
 
 def init_user(message: types.Message, db_manager: DBManager):
     users = db_manager.find_data(UserModel, condition="telegram_id=?", condition_data=[message.from_user.id])
@@ -404,5 +404,8 @@ def init(bot: TeleBot, db_manager: DBManager):
 
 def loop(bot: TeleBot):
     for admin in config.ADMINS:
-        bot.send_message(admin, "Start Vocal Teacher Bot")
+        try:
+            bot.send_message(admin, "Start Vocal Teacher Bot")
+        except:
+            pass
     bot.infinity_polling()
