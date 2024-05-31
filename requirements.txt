@@ -1,5 +1,4 @@
 PyTelegramBotApi
 openpyxl
 python-magic
-python-magic-bin
 requests
