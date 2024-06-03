@@ -32,13 +32,16 @@ def registration_name(bot: TeleBot, message: types.Message, user: Model, db_mana
     user.state = "registration-class"
     db_manager.save_data(user)
     bot.send_message(user.telegram_id, "Теперь отправьте класс", reply_markup=types.ReplyKeyboardMarkup(resize_keyboard=True).add
-                     (*[types.KeyboardButton(str(i)) for i in range(1, 12)], row_width=3))
+                     (*([types.KeyboardButton(str(i)) for i in range(1, 5)]+[types.KeyboardButton("Педагог")]), row_width=3))
     return True
 
 def registration_class(bot: TeleBot, message: types.Message, user: Model, db_manager: DBManager):
-    if not message.text.isdigit() or not(1 <= int(message.text) <= 11):
+    if message.text == "Педагог":
+        user.grade = -1
+    elif message.text.isdigit() or not(1 <= int(message.text) <= 4):
+        user.grade = int(message.text)
+    else:
         return False
-    user.grade = int(message.text)
     return to_menu(bot, message, user, db_manager)
 
 def send_description(bot: TeleBot, user: Model, text: str, files: list[str], markup=None):
