@@ -209,7 +209,7 @@ def task_ans(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_manage
         markup.add(types.InlineKeyboardButton(answer["name"], 
             callback_data=json.dumps({"c":"task-ans", "id":test.rowid,"task":user.current_test["task"],"ans":i, "delete":0})))
     message = task_template.format(
-        id=1,
+        id=user.current_test["task"]+1,
         name=task["name"],
         description=task["description"]
     )

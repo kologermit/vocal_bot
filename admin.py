@@ -4,7 +4,7 @@ from Model import Model
 from models import *
 from openpyxl import Workbook, load_workbook
 from openpyxl.utils import get_column_letter
-import copy, os, logging, json
+import copy, os, logging, json, uuid
 
 admin_markup = types.InlineKeyboardMarkup()
 admin_markup.add(types.InlineKeyboardButton("Тесты:", callback_data="None"), row_width=1)
@@ -158,37 +158,76 @@ def update_tests(bot: TeleBot, filepath: str, message: types.Message, user: Mode
 
 def get_tests_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_manager: DBManager):
     tests = db_manager.find_data(TestModel)
-    if not tests:
-        bot.send_message(user.telegram_id, "Тесты отсутствуют")
-        return
+    os.makedirs("./tmp/files/", exist_ok=True)
+    filepath = "./tmp/files/tests.xlsx"
     wb = Workbook()
-    for i, test in enumerate(tests):
-        sheet = wb.create_sheet(str(i+1))
-        sheet.cell(1, 1, str(i+1))
-        sheet.cell(1, 2, "Тест")
+    if not tests:
+        sheet = wb.active
+
+        sheet.cell(1, 1, "1")
         sheet.cell(2, 1, "Название")
-        sheet.cell(2, 2, test.name)
         sheet.cell(3, 1, "Описание")
-        sheet.cell(3, 2, test.description)
         sheet.cell(4, 1, "Правильный ответ")
         sheet.cell(5, 1, "Файлы")
-        set_files(sheet, test.files, 2, 5)
-        last_task_cell = 3
-        for task in test.tasks:
-            sheet.cell(1, last_task_cell, "Вопрос")
-            sheet.cell(2, last_task_cell, task["name"])
-            sheet.cell(3, last_task_cell, task["description"])
-            sheet.cell(4, last_task_cell, task["right_answer"])
-            set_files(sheet, task["files"], last_task_cell, 5)
-            for answer in task["answers"]:
-                last_task_cell += 1
-                sheet.cell(1, last_task_cell, "Ответ")
-                sheet.cell(2, last_task_cell, answer["name"])
-                sheet.cell(3, last_task_cell, answer["description"])
-                sheet.cell(4, last_task_cell, "")
-                set_files(sheet, answer["files"], last_task_cell, 5)
-            last_task_cell += 2
-    wb.remove(wb[wb.worksheets[0].title])
+
+        sheet.cell(1, 2, "Тест")
+        sheet.cell(2, 2, "Название теста")
+        sheet.cell(3, 2, "Описание теста")
+        sheet.cell(4, 2, "-")
+        def rand_str():
+            return str(uuid.uuid4())[:5]
+        sheet.cell(5, 2, f"Файл теста {rand_str()}.jpg")
+        sheet.cell(6, 2, f"{rand_str()}.jpg")
+        sheet.cell(7, 2, f"{rand_str()}.jpg")
+
+        current_column = 3
+        for i in range(3):
+            sheet.cell(1, current_column, "Вопрос")
+            sheet.cell(2, current_column, f"Название вопроса")
+            sheet.cell(3, current_column, f"Описание вопроса")
+            sheet.cell(4, current_column, f"1")
+            sheet.cell(5, current_column, f"Файл вопроса {rand_str()}.jpg")
+            sheet.cell(6, current_column, f"{rand_str()}.jpg")
+            sheet.cell(7, current_column, f"{rand_str()}.jpg")
+            for _ in range(3):
+                current_column += 1
+                sheet.cell(1, current_column, "Ответ")
+                sheet.cell(2, current_column, "Название ответа")
+                sheet.cell(3, current_column, "Описание ответа")
+                sheet.cell(4, current_column, f"-")
+                sheet.cell(5, current_column, f"Файл ответа {rand_str()}.jpg")
+                sheet.cell(6, current_column, f"{rand_str()}.jpg")
+                sheet.cell(7, current_column, f"{rand_str()}.jpg")
+            current_column += 2
+        bot.send_message(user.telegram_id, "Тесты отсутствуют. Вот пример заполнения таблицы:")
+    else:
+        for i, test in enumerate(tests):
+            sheet = wb.create_sheet(str(i+1))
+            sheet.cell(1, 1, str(i+1))
+            sheet.cell(1, 2, "Тест")
+            sheet.cell(2, 1, "Название")
+            sheet.cell(2, 2, test.name)
+            sheet.cell(3, 1, "Описание")
+            sheet.cell(3, 2, test.description)
+            sheet.cell(4, 1, "Правильный ответ")
+            sheet.cell(5, 1, "Файлы")
+            set_files(sheet, test.files, 2, 5)
+            last_task_cell = 3
+            for task in test.tasks:
+                sheet.cell(1, last_task_cell, "Вопрос")
+                sheet.cell(2, last_task_cell, task["name"])
+                sheet.cell(3, last_task_cell, task["description"])
+                sheet.cell(4, last_task_cell, task["right_answer"])
+                set_files(sheet, task["files"], last_task_cell, 5)
+                for answer in task["answers"]:
+                    last_task_cell += 1
+                    sheet.cell(1, last_task_cell, "Ответ")
+                    sheet.cell(2, last_task_cell, answer["name"])
+                    sheet.cell(3, last_task_cell, answer["description"])
+                    sheet.cell(4, last_task_cell, "")
+                    set_files(sheet, answer["files"], last_task_cell, 5)
+                last_task_cell += 2
+        wb.remove(wb[wb.worksheets[0].title])
     os.makedirs("./tmp/files/", exist_ok=True)
     filepath = "./tmp/files/tests.xlsx"
     wb.save(filepath)
@@ -218,28 +257,51 @@ def update_theory(bot: TeleBot, filepath: str, callback: types.CallbackQuery, us
 
 def get_theory_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_manager: DBManager):
     theorys = db_manager.find_data(TheoryModel)
-    if not theorys:
-        bot.send_message(user.telegram_id, "Теория отсутствует")
-        return
+    os.makedirs("./tmp/files/", exist_ok=True)
+    filepath = "./tmp/files/teorys.xlsx"
     wb = Workbook()
-    for i, theory in enumerate(theorys):
-        sheet = wb.create_sheet(str(i))
-        sheet.cell(1, 1, str(i+1))
+    if not theorys:
+        sheet = wb.active
+        
+        sheet.cell(1, 1, "1")
         sheet.cell(2, 1, "Название")
         sheet.cell(3, 1, "Описание")
         sheet.cell(4, 1, "Файлы")
+
         sheet.cell(1, 2, "Теория")
-        sheet.cell(2, 2, theory.name)
-        sheet.cell(3, 2, theory.description)
-        set_files(sheet, theory.files, 2, 4)
-        for j, paragraph in enumerate(theory.paragraphs):
-            sheet.cell(1, 3+j, str(j+1))
-            sheet.cell(2, 3+j, paragraph["name"])
-            sheet.cell(3, 3+j, paragraph["description"])
-            set_files(sheet, paragraph["files"], 3+j, 4)
-    wb.remove(wb[wb.worksheets[0].title])
-    os.makedirs("./tmp/files/", exist_ok=True)
-    filepath = "./tmp/files/teorys.xlsx"
+        sheet.cell(2, 2, "Название теориии")
+        sheet.cell(3, 2, "Описание теории")
+        sheet.cell(4, 2, "Файлы с теорией (jncsdc.wav)")
+        sheet.cell(5, 2, "photo2345.png")
+        sheet.cell(6, 2, "videoerihvhdbfv.mp4")
+
+        for i in range(3):
+            sheet.cell(1, 3+i, f"Параграф {i+1}")
+            sheet.cell(2, 3+i, f"Название параграфа {i+1}")
+            sheet.cell(3, 3+i, f"Описание параграфа {i+1}")
+            def rand_str():
+                return str(uuid.uuid4())[:5]
+            sheet.cell(4, 3+i, f"Файлы параграфа {i+1} ({rand_str()}.jpg)")
+            sheet.cell(5, 3+i, f"Файлы параграфа {i+1} ({rand_str()}.m4a)")
+            sheet.cell(6, 3+i, f"Файлы параграфа {i+1} ({rand_str()}.pdf)")
+        bot.send_message(user.telegram_id, "Теория отсутствует. Вот пример заполнения таблицы:")
+    else:
+        for i, theory in enumerate(theorys):
+            sheet = wb.create_sheet(str(i))
+            sheet.cell(1, 1, str(i+1))
+            sheet.cell(2, 1, "Название")
+            sheet.cell(3, 1, "Описание")
+            sheet.cell(4, 1, "Файлы")
+            sheet.cell(1, 2, "Теория")
+            sheet.cell(2, 2, theory.name)
+            sheet.cell(3, 2, theory.description)
+            set_files(sheet, theory.files, 2, 4)
+            for j, paragraph in enumerate(theory.paragraphs):
+                sheet.cell(1, 3+j, str(j+1))
+                sheet.cell(2, 3+j, paragraph["name"])
+                sheet.cell(3, 3+j, paragraph["description"])
+                set_files(sheet, paragraph["files"], 3+j, 4)
+        wb.remove(wb[wb.worksheets[0].title])
     wb.save(filepath)
     wb.close()
     bot.send_document(user.telegram_id, open(filepath, "rb"))
