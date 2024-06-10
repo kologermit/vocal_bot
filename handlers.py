@@ -51,9 +51,10 @@ def send_description(bot: TeleBot, user: Model, text: str, files: list[str], mar
         if not os.path.exists(filepath):
             logging.warning(f"{filepath} not found!")
             continue
+        if "audio" in m.from_file(filepath):
+            bot.send_audio(user.telegram_id, open(filepath, "rb"), title="audio")
         for key, func in {
             "image": bot.send_photo,
-            "audio": bot.send_audio,
             "video": bot.send_video
         }.items():
             if key in m.from_file(filepath):
