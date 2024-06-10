@@ -283,8 +283,7 @@ def theory_next_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_
         theme=next_paragraph["name"], 
         description=next_paragraph["description"])
     message = send_description(bot, user, message, next_paragraph["files"], markup)
-    if len(theory.paragraphs) == next_paragraph["id"]+1:
-        bot.reply_to(message, "Теория пройдена✅")
+    return to_menu(bot, message, user, db_manager, "Теория пройдена✅")
 
 def theory_back_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_manager: DBManager):
     res, theory, data = get_theory_by_callback(bot, callback, db_manager, user)
