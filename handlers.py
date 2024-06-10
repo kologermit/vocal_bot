@@ -241,18 +241,20 @@ def theory_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_manag
         return
     paragraph = theory.paragraphs[0]
     markup = types.InlineKeyboardMarkup()
-    if len(theory.paragraphs) >= 1:
+    if len(theory.paragraphs) >= 2:
         markup.add(
             types.InlineKeyboardButton("❌", callback_data="None"),
             types.InlineKeyboardButton("▶️", 
                 callback_data=json.dumps({"c": "theory-next", "id": theory.rowid, "paragraph": 0, "delete": False})),
                 row_width=2)
-    send_description(
+    message = send_description(
         bot, 
         user, 
         paragraph_template.format(paragraph=1, theme=paragraph["name"], description=paragraph["description"]), 
         paragraph["files"], 
         markup)
+    if len(theory.parahraphs) == 1:
+        return to_menu(bot, message, user, db_manager, theory_complete)
     
 def theory_next_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_manager: DBManager):
     res, theory, data = get_theory_by_callback(bot, callback, db_manager, user)
@@ -284,7 +286,7 @@ def theory_next_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_
         description=next_paragraph["description"])
     message = send_description(bot, user, message, next_paragraph["files"], markup)
     if len(theory.paragraphs) == next_paragraph["id"]+1:
-        return to_menu(bot, message, user, db_manager, "Теория пройдена✅")
+        return to_menu(bot, message, user, db_manager, theory_complete)
 
 def theory_back_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_manager: DBManager):
     res, theory, data = get_theory_by_callback(bot, callback, db_manager, user)
