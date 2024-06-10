@@ -179,7 +179,7 @@ def task_ans(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_manage
         or user.current_test.get("task") != data["task"]:
         return
     user.current_test["answers"].append(data["ans"])
-    bot.edit_message_text(callback.message.text + f"\n\n<b>Ответ: </b>{test.tasks[data['task']]['name']}",
+    bot.edit_message_text(callback.message.text + f"\n\n<b>Ответ: </b>{test.tasks[data['task']]['answers'][data['ans']]['name']}",
         user.telegram_id, callback.message.id, parse_mode="HTML", reply_markup='')
     if user.current_test["task"]+1 == len(test.tasks):
         s = 0
