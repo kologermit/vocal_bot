@@ -58,7 +58,7 @@ def send_description(bot: TeleBot, user: Model, text: str, files: list[str], mar
         }.items():
             if key in m.from_file(filepath):
                 func(user.telegram_id, open(filepath, "rb"))
-    return bot.send_message(user.telegram_id, text, parse_mode="HTML", reply_markup=markup)
+    return bot.send_message(user.telegram_id, text.replace("None", ""), parse_mode="HTML", reply_markup=markup)
 
 def to_tests(bot: TeleBot, message: types.Message, user: Model, db_manager: DBManager):
     tests = db_manager.find_data(TestModel)
@@ -88,7 +88,7 @@ def menu(bot: TeleBot, message: types.Message, user: Model, db_manager: DBManage
     if message.text == menu_statistic_button:
         bot.reply_to(message, f"""<b><u>Статистика:</u></b>
 <b>Имя: </b><i>{user.full_name}</i>
-<b>Класс: </b><i>{user.grade}</i>
+<b>Класс: </b><i>{'Педагог' if user.grade == -1 else user.grade}</i>
 <b>Пройдено тем: </b><i>{len(user.accepted_theory)}</i>
 <b>Решено тестов: </b><i>{len(user.accepted_tests)}</i>
 <b>Первое сообщение: </b><i>{user.first_message}</i>""", parse_mode="HTML")
