@@ -45,7 +45,6 @@ def registration_class(bot: TeleBot, message: types.Message, user: Model, db_man
     return to_menu(bot, message, user, db_manager)
 
 def send_description(bot: TeleBot, user: Model, text: str, files: list[str], markup=None):
-    message = bot.send_message(user.telegram_id, text, parse_mode="HTML", reply_markup=markup)
     m = magic.Magic(mime=True, uncompress=True)
     for filepath in files:
         filepath = f"./tmp/files/{filepath}"
@@ -59,6 +58,7 @@ def send_description(bot: TeleBot, user: Model, text: str, files: list[str], mar
         }.items():
             if key in m.from_file(filepath):
                 func(user.telegram_id, open(filepath, "rb"), reply_to_message_id=message.id)
+    message = bot.send_message(user.telegram_id, text, parse_mode="HTML", reply_markup=markup)
     return 
 
 def to_tests(bot: TeleBot, message: types.Message, user: Model, db_manager: DBManager):
@@ -93,8 +93,10 @@ def menu(bot: TeleBot, message: types.Message, user: Model, db_manager: DBManage
 <b>Пройдено тем: </b><i>{len(user.accepted_theory)}</i>
 <b>Решено тестов: </b><i>{len(user.accepted_tests)}</i>
 <b>Первое сообщение: </b><i>{user.first_message}</i>""", parse_mode="HTML")
+        return True
     if message.text == menu_info_button:
         bot.reply_to(message, description, parse_mode="HTML")
+        return True
     if message.text == menu_tests_button:
         return to_tests(bot, message, user, db_manager)
     if message.text == menu_theory_button:
