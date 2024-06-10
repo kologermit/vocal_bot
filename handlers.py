@@ -57,9 +57,8 @@ def send_description(bot: TeleBot, user: Model, text: str, files: list[str], mar
             "video": bot.send_video
         }.items():
             if key in m.from_file(filepath):
-                func(user.telegram_id, open(filepath, "rb"), reply_to_message_id=message.id)
-    message = bot.send_message(user.telegram_id, text, parse_mode="HTML", reply_markup=markup)
-    return 
+                func(user.telegram_id, open(filepath, "rb"))
+    return bot.send_message(user.telegram_id, text, parse_mode="HTML", reply_markup=markup)
 
 def to_tests(bot: TeleBot, message: types.Message, user: Model, db_manager: DBManager):
     tests = db_manager.find_data(TestModel)
@@ -283,7 +282,9 @@ def theory_next_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_
         paragraph=next_paragraph["id"]+1, 
         theme=next_paragraph["name"], 
         description=next_paragraph["description"])
-    send_description(bot, user, message, next_paragraph["files"], markup)
+    message = send_description(bot, user, message, next_paragraph["files"], markup)
+    if len(theory.paragraphs) == next_paragraph["id"]+1:
+        bot.reply_to(message, "Теория пройдена✅")
 
 def theory_back_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_manager: DBManager):
     res, theory, data = get_theory_by_callback(bot, callback, db_manager, user)
