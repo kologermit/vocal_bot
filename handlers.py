@@ -150,13 +150,13 @@ def testing_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_mana
     task = test.tasks[0]
     markup = types.InlineKeyboardMarkup()
     for i, answer in enumerate(task["answers"]):
-        message = answer_template.format(
-            name=answer["name"],
-            description=answer["description"]
-        )
-        send_description(bot, user, message, answer["files"], types.ReplyKeyboardMarkup(resize_keyboard=True).add(
-            types.KeyboardButton(end_test_button),
-        ))
+        # message = answer_template.format(
+        #     name=answer["name"],
+        #     description=answer["description"]
+        # )
+        # send_description(bot, user, message, answer["files"], types.ReplyKeyboardMarkup(resize_keyboard=True).add(
+        #     types.KeyboardButton(end_test_button),
+        # ))
         markup.add(types.InlineKeyboardButton(answer["name"], 
             callback_data=json.dumps({"c":"task-ans", "id":test.rowid,"task":0,"ans":i, "delete":0})))
     message = task_template.format(
