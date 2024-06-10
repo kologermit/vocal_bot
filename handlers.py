@@ -253,7 +253,10 @@ def theory_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_manag
         paragraph_template.format(paragraph=1, theme=paragraph["name"], description=paragraph["description"]), 
         paragraph["files"], 
         markup)
-    if len(theory.parahraphs) == 1:
+    if len(theory.paragraphs) == 1:
+        if theory.rowid not in user.accepted_theory:
+            user.accepted_theory.append(theory.rowid)
+            db_manager.save_data(user)
         return to_menu(bot, message, user, db_manager, theory_complete)
     
 def theory_next_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_manager: DBManager):
