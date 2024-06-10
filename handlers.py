@@ -64,9 +64,10 @@ def to_tests(bot: TeleBot, message: types.Message, user: Model, db_manager: DBMa
     tests = db_manager.find_data(TestModel)
     bot.reply_to(message, "<b>Доступные тесты:</b>", parse_mode="HTML")
     for test in tests:
-        text = test.description
         if test.rowid in user.accepted_tests:
-            text = "<b>Тест пройден✅</b>\n" + test.description
+            text = "<b>Тест пройден✅</b>\n" + test.name + "\n" + test.description
+        else:
+            text = "<b>Тест не пройден❌</b>\n" + test.name + "\n" + test.description
         markup = types.InlineKeyboardMarkup()
         markup.add(types.InlineKeyboardButton("Пройти тест✍️", callback_data=json.dumps({"c": "testing", "id": test.rowid})))
         send_description(bot, user, text, test.files, markup)
