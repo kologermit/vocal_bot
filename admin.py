@@ -214,8 +214,8 @@ def get_tests_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_ma
         bot.send_message(user.telegram_id, "Тесты отсутствуют. Вот пример заполнения таблицы:")
     else:
         for i, test in enumerate(tests):
-            sheet = wb.create_sheet(str(i+1))
             test = replace_none_to_space(test)
+            sheet = wb.create_sheet(test.name)
             sheet.cell(1, 1, str(i+1))
             sheet.cell(1, 2, "Тест")
             sheet.cell(2, 1, "Название")
@@ -303,7 +303,7 @@ def get_theory_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_m
     else:
         for i, theory in enumerate(theorys):
             theory = replace_none_to_space(theory)
-            sheet = wb.create_sheet(str(i))
+            sheet = wb.create_sheet(theory.name)
             sheet.cell(1, 1, str(i+1))
             sheet.cell(2, 1, "Название")
             sheet.cell(3, 1, "Описание")
