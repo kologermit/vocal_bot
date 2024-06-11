@@ -258,7 +258,7 @@ def final_test(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_mana
     if len(test["answers"]) == len(test["tasks"]):
         s = 0
         for i, ans in enumerate(user.current_test["answers"]):
-            task = test.tasks[i]
+            task = test['tasks'][i]
             right_answer = str(task["right_answer"])
             if str(ans+1) == str(right_answer):
                 s += 1
