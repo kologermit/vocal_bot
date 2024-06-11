@@ -179,15 +179,19 @@ def task_ans(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_manage
         or user.current_test.get("task") != data["task"]:
         return
     user.current_test["answers"].append(data["ans"])
-    bot.edit_message_text(callback.message.text + f"\n\n<b>Ответ: </b>{test.tasks[data['task']]['answers'][data['ans']]['name']}",
+    task = test.tasks[data["task"]]
+    right_answer = task['answers'][int(task["right_answer"])-1]
+    bot.edit_message_text(f"""{callback.message.text}
+
+<b>Ваш ответ{'✅' if str(data['ans']+1) == task['right_answer'] else '❌'}: </b>{task['answers'][data['ans']]['name']}
+<b>Правильный ответ: {right_answer['name']}</b>""",
         user.telegram_id, callback.message.id, parse_mode="HTML", reply_markup='')
     if user.current_test["task"]+1 == len(test.tasks):
         s = 0
         for i, ans in enumerate(user.current_test["answers"]):
             task = test.tasks[i]
             right_answer = str(task["right_answer"])
-            if str(ans+1) == str(right_answer) \
-                or right_answer.upper() == task["answers"][ans]["name"].upper():
+            if str(ans+1) == str(right_answer):
                 s += 1
         result = s/len(test.tasks)*100
         bot.send_message(user.telegram_id, f"<b>Результат: </b><i>{result}% (необходимо набрать 70% для прохождения)</i>", parse_mode="HTML")
