@@ -49,6 +49,18 @@ def set_files(sheet, files, x, y):
     for i, file in enumerate(files):
         sheet.cell(y+i, x, file)
 
+def replace_none_to_space(a):
+    if isinstance(a, Model):
+        d = a.__dict__
+    elif isinstance(a, dict):
+        d = a
+    else:
+        return a
+    for key, value in d.items():
+        if value is None or isinstance(value, str) and value.strip() == "None":
+            d[key] = " "
+    return a
+
 def read_excel_theory(filepath: str):
     wb = load_workbook(filepath)
     data = {}
@@ -118,6 +130,7 @@ def get_users_table(bot: TeleBot, callback: types.CallbackQuery, user: Model, db
     for i in range(1, 10):
         sheet.column_dimensions[get_column_letter(i)].width = max(len(str(sheet.cell(1, i).value)), 10)
     for i,  user in enumerate(db_manager.find_data(UserModel)):
+        user = replace_none_to_space(user)
         sheet.cell(2+i, 1, user.telegram_id)
         sheet.cell(2+i, 2, user.user_name)
         sheet.cell(2+i, 3, user.full_name)
@@ -163,7 +176,6 @@ def get_tests_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_ma
     wb = Workbook()
     if not tests:
         sheet = wb.active
-
         sheet.cell(1, 1, "1")
         sheet.cell(2, 1, "Название")
         sheet.cell(3, 1, "Описание")
@@ -203,6 +215,7 @@ def get_tests_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_ma
     else:
         for i, test in enumerate(tests):
             sheet = wb.create_sheet(str(i+1))
+            test = replace_none_to_space(test)
             sheet.cell(1, 1, str(i+1))
             sheet.cell(1, 2, "Тест")
             sheet.cell(2, 1, "Название")
@@ -214,12 +227,14 @@ def get_tests_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_ma
             set_files(sheet, test.files, 2, 5)
             last_task_cell = 3
             for task in test.tasks:
+                task = replace_none_to_space(task)
                 sheet.cell(1, last_task_cell, "Вопрос")
                 sheet.cell(2, last_task_cell, task["name"])
                 sheet.cell(3, last_task_cell, task["description"])
                 sheet.cell(4, last_task_cell, task["right_answer"])
                 set_files(sheet, task["files"], last_task_cell, 5)
                 for answer in task["answers"]:
+                    answer = replace_none_to_space(answer)
                     last_task_cell += 1
                     sheet.cell(1, last_task_cell, "Ответ")
                     sheet.cell(2, last_task_cell, answer["name"])
@@ -287,6 +302,7 @@ def get_theory_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_m
         bot.send_message(user.telegram_id, "Теория отсутствует. Вот пример заполнения таблицы:")
     else:
         for i, theory in enumerate(theorys):
+            theory = replace_none_to_space(theory)
             sheet = wb.create_sheet(str(i))
             sheet.cell(1, 1, str(i+1))
             sheet.cell(2, 1, "Название")
@@ -297,6 +313,7 @@ def get_theory_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_m
             sheet.cell(3, 2, theory.description)
             set_files(sheet, theory.files, 2, 4)
             for j, paragraph in enumerate(theory.paragraphs):
+                paragraph = replace_none_to_space(paragraph)
                 sheet.cell(1, 3+j, str(j+1))
                 sheet.cell(2, 3+j, paragraph["name"])
                 sheet.cell(3, 3+j, paragraph["description"])
