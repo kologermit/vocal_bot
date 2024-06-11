@@ -280,6 +280,9 @@ def final_test(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_mana
             caption = "Отлично. Молодец, ты справился!✅"
             grade = 5
         bot.send_photo(user.telegram_id, file, f"<b>{caption}\nРезультат: </b>{s} из 5\n<b>Оценка:</b> {grade}", parse_mode="HTML")
+        user.current_test = {}
+        if grade >= 4 and -1 not in user.accepted_tests:
+            user.accepted_tests.append(-1)
         return  to_menu(bot, callback, user, db_manager)
     user.current_test["task"] += 1
     db_manager.save_data(user)
