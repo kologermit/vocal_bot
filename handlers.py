@@ -193,17 +193,26 @@ def task_ans(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_manage
             right_answer = str(task["right_answer"])
             if str(ans+1) == str(right_answer):
                 s += 1
-        result = s/len(test.tasks)*100
-        bot.send_message(user.telegram_id, f"<b>Результат: </b><i>{result}% (необходимо набрать 70% для прохождения)</i>", parse_mode="HTML")
-        if result >= 70:
-            bot.send_message(user.telegram_id, f"Тест пройден✅")
-            if test.rowid not in user.accepted_tests:
-                user.accepted_tests.append(test.rowid)
+        
+        if 0 <= s <= 2:
+            file = open("bad.jpg", "rb")
+            caption = "Подготовься лучше!❌"
+            grade = 2
+        elif s == 3:
+            file = open("poor.jpg", "rb")
+            caption = "Удовлетворительно. Ты можешь лучше!"
+            grade = 3
+        elif s == 4:
+            file = open("good.jpg", "rb")
+            caption = "Хорошо. Будь внимательнее!✅"
+            grade = 4
         else:
-            bot.send_message(user.telegram_id, f"Тест не пройден❌")
+            file = open("excelent.jpg", "rb")
+            caption = "Отлично. Молодец, ты справился!✅"
+            grade = 5
+        bot.send_photo(user.telegram_id, file, f"<b>{caption}\nРезультат: </b>{s} из 5\n<b>Оценка:</b> {grade}")
         user.current_test = {}
-        to_menu(bot, callback, user, db_manager)
-        return
+        return to_menu(bot, callback, user, db_manager)
     user.current_test["task"] += 1
     db_manager.save_data(user)
     task = test.tasks[user.current_test["task"]]
