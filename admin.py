@@ -215,10 +215,11 @@ def get_tests_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_ma
     else:
         for i, test in enumerate(tests):
             test = replace_none_to_space(test)
-            test.name = "".join(filter(lambda x: x in "йцукенгшщзхфывапролдячсмитьбюЙЦУКЕНГШЩЗХЪъФЫВАПРОЛДЖЭЯЧСМИТЬБЮqwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLXCVBNM",test.name))
-            if not test.name:
-                test.name = rand_str()
-            sheet = wb.create_sheet(test.name)
+            sheet_name = copy.deepcopy(test.name)
+            sheet_name = "".join(filter(lambda x: x in "йцукенгшщзхфывапролдячсмитьбюЙЦУКЕНГШЩЗХЪъФЫВАПРОЛДЖЭЯЧСМИТЬБЮqwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLXCVBNM",sheet_name))
+            if not sheet_name:
+                sheet_name = rand_str()
+            sheet = wb.create_sheet(sheet_name)
             sheet.cell(1, 1, str(i+1))
             sheet.cell(1, 2, "Тест")
             sheet.cell(2, 1, "Название")
@@ -305,11 +306,11 @@ def get_theory_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_m
         bot.send_message(user.telegram_id, "Теория отсутствует. Вот пример заполнения таблицы:")
     else:
         for i, theory in enumerate(theorys):
-            theory = replace_none_to_space(theory)
-            theory.name = "".join(filter(lambda x: x in "йцукенгшщзхфывапролдячсмитьбюЙЦУКЕНГШЩЗХЪъФЫВАПРОЛДЖЭЯЧСМИТЬБЮqwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLXCVBNM",theory.name))
-            if not theory.name:
-                theory.name = rand_str()
-            sheet = wb.create_sheet(theory.name)
+            sheet_name = copy.deepcopy(theorys.name)
+            sheet_name = "".join(filter(lambda x: x in "йцукенгшщзхфывапролдячсмитьбюЙЦУКЕНГШЩЗХЪъФЫВАПРОЛДЖЭЯЧСМИТЬБЮqwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLXCVBNM",sheet_name))
+            if not sheet_name:
+                sheet_name = rand_str()
+            sheet = wb.create_sheet(sheet_name)
             sheet.cell(1, 1, str(i+1))
             sheet.cell(2, 1, "Название")
             sheet.cell(3, 1, "Описание")
