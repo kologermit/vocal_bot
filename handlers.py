@@ -255,7 +255,7 @@ def final_test(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_mana
 <b>Ваш ответ{'✅' if str(data['ans']+1) == task['right_answer'] else '❌'}: </b>{task['answers'][data['ans']]['name']}
 <b>Правильный ответ: {right_answer['name']}</b>""",
         user.telegram_id, callback.message.id, parse_mode="HTML", reply_markup='')
-    if user.current_test["task"]+1 == len(test.tasks):
+    if len(test["answers"]) == len(test["tasks"]):
         s = 0
         for i, ans in enumerate(user.current_test["answers"]):
             task = test.tasks[i]
