@@ -1,4 +1,4 @@
-import config, copy, datetime, logging, json, admin, os, urllib, magic
+import config, copy, datetime, logging, json, admin, os, urllib, magic, random
 from telebot import TeleBot, types
 from DBManager import DBManager
 from Model import Model
@@ -13,6 +13,7 @@ def to_menu(bot: TeleBot, message: types.Message, user: Model, db_manager: DBMan
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add(menu_theory_button, menu_tests_button, row_width=2)
     markup.add(menu_info_button, menu_statistic_button, row_width=2)
+    markup.add(menu_final_test_button, row_width=1)
     bot.send_message(user.telegram_id, menu_message, parse_mode="HTML", reply_markup=markup)
     return True
 
@@ -102,6 +103,8 @@ def menu(bot: TeleBot, message: types.Message, user: Model, db_manager: DBManage
         return to_tests(bot, message, user, db_manager)
     if message.text == menu_theory_button:
         return to_theory(bot, message, user, db_manager)
+    if message.text == menu_final_test_button:
+        return to_final_test(bot, message, user, db_manager)
     return False
 
 def init_user(message: types.Message, db_manager: DBManager):
@@ -151,13 +154,6 @@ def testing_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_mana
     task = test.tasks[0]
     markup = types.InlineKeyboardMarkup()
     for i, answer in enumerate(task["answers"]):
-        # message = answer_template.format(
-        #     name=answer["name"],
-        #     description=answer["description"]
-        # )
-        # send_description(bot, user, message, answer["files"], types.ReplyKeyboardMarkup(resize_keyboard=True).add(
-        #     types.KeyboardButton(end_test_button),
-        # ))
         markup.add(types.InlineKeyboardButton(answer["name"], 
             callback_data=json.dumps({"c":"task-ans", "id":test.rowid,"task":0,"ans":i, "delete":0})))
     message = task_template.format(
@@ -168,9 +164,13 @@ def testing_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_mana
     send_description(bot, user, message, task["files"], markup)
 
 def task_ans(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_manager: DBManager):
-    if user.state != "test":
+    if user.state not in ["test", "final-test"]:
         return
     data = json.loads(callback.data)
+    if user.state == "final-test":
+        if data["id"] != -1:
+            return
+        return final_test(bot, callback, user, db_manager, data)
     tests = db_manager.find_data(TestModel, condition="rowid=?", condition_data=[data["id"]])
     if not tests:
         return 
@@ -209,13 +209,6 @@ def task_ans(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_manage
     task = test.tasks[user.current_test["task"]]
     markup = types.InlineKeyboardMarkup()
     for i, answer in enumerate(task["answers"]):
-        # message = answer_template.format(
-        #     name=answer["name"],
-        #     description=answer["description"]
-        # )
-        # send_description(bot, user, message, answer["files"], types.ReplyKeyboardMarkup(resize_keyboard=True).add(
-        #     types.KeyboardButton(end_test_button),
-        # ))
         markup.add(types.InlineKeyboardButton(answer["name"], 
             callback_data=json.dumps({"c":"task-ans", "id":test.rowid,"task":user.current_test["task"],"ans":i, "delete":0})))
     message = task_template.format(
@@ -224,7 +217,75 @@ def task_ans(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_manage
         description=task["description"]
     )
     send_description(bot, user, message, task["files"], markup)
-    
+
+def to_final_test(bot: TeleBot, message: types.Message, user: Model, db_manager: DBManager):
+    user.state = "final-test"
+    tests = db_manager.find_data(TestModel)
+    tasks = []
+    for test in tests:
+        tasks.extend(test.tasks)
+    random.shuffle(tasks)
+    user.current_test = {
+        "tasks": tasks[:5],
+        "answers": [],
+        "task": 0,
+    }
+    bot.send_message(user.telegram_id, menu_final_test_button, reply_markup=types.ReplyKeyboardMarkup(resize_keyboard=True).add(end_test_button))
+    task = tasks[0]
+    markup = types.InlineKeyboardMarkup()
+    for i, answer in enumerate(task["answers"]):
+        markup.add(types.InlineKeyboardButton(answer["name"], 
+            callback_data=json.dumps({"c":"task-ans", "id":-1,"task":user.current_test["task"],"ans":i, "delete":0})))
+    message = task_template.format(
+        id=1,
+        name=task['name'],
+        description=task['description']
+    )
+    send_description(bot, user, message, task['files'], markup)
+    db_manager.save_data(user)
+    return True
+
+def final_test(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_manager: DBManager, data):
+    test = user.current_test
+    test["answers"].append(data['ans'])
+    task = test['tasks'][data['task']]
+    right_answer = task['answers'][int(task["right_answer"])-1]
+    bot.edit_message_text(f"""{callback.message.text}
+
+<b>Ваш ответ{'✅' if str(data['ans']+1) == task['right_answer'] else '❌'}: </b>{task['answers'][data['ans']]['name']}
+<b>Правильный ответ: {right_answer['name']}</b>""",
+        user.telegram_id, callback.message.id, parse_mode="HTML", reply_markup='')
+    if len(test["answers"]) == len(test["tasks"]):
+        s = 0
+        for i, ans in enumerate(test["answers"]):
+            task = test["tasks"][i]
+            right_answer = str(task["right_answer"])
+            if str(ans+1) == str(right_answer):
+                s += 1
+        result = s/len(test["tasks"])*100
+        bot.send_message(user.telegram_id, f"<b>Результат: </b><i>{result}% (необходимо набрать 70% для прохождения)</i>", parse_mode="HTML")
+        if result >= 70:
+            bot.send_message(user.telegram_id, f"Тест пройден✅")
+            if -1 not in user.accepted_tests:
+                user.accepted_tests.append(-1)
+        else:
+            bot.send_message(user.telegram_id, f"Тест не пройден❌")
+        user.current_test = {}
+        to_menu(bot, callback, user, db_manager)
+        return
+    user.current_test["task"] += 1
+    db_manager.save_data(user)
+    task = test["tasks"][user.current_test["task"]]
+    markup = types.InlineKeyboardMarkup()
+    for i, answer in enumerate(task["answers"]):
+        markup.add(types.InlineKeyboardButton(answer["name"], 
+            callback_data=json.dumps({"c":"task-ans", "id":-1,"task":user.current_test["task"],"ans":i, "delete":0})))
+    message = task_template.format(
+        id=user.current_test["task"]+1,
+        name=task["name"],
+        description=task["description"]
+    )
+    send_description(bot, user, message, task["files"], markup)
 
 def test(bot: TeleBot, message: types.Message, user: Model, db_manager: DBManager):
     if message.text != end_test_button:
@@ -406,6 +467,7 @@ def init(bot: TeleBot, db_manager: DBManager):
             "registration-class": registration_class,
             "menu": menu,
             "test": test,
+            "final-test": test,
         }
         if states.get(user.state):
             try:

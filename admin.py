@@ -25,6 +25,8 @@ admin_markup.add(types.InlineKeyboardButton("База данных пользо�
 def get_cell(cells, x, y):
     return str(cells.get(x, {y: ""}).get(y, ""))
 
+def rand_str():
+    return str(uuid.uuid4())[:5]
 def get_cells(sheet):
     cells = {}
     for y, column in enumerate(sheet):
@@ -186,8 +188,6 @@ def get_tests_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_ma
         sheet.cell(2, 2, "Название теста")
         sheet.cell(3, 2, "Описание теста")
         sheet.cell(4, 2, "-")
-        def rand_str():
-            return str(uuid.uuid4())[:5]
         sheet.cell(5, 2, f"Файл теста {rand_str()}.jpg")
         sheet.cell(6, 2, f"{rand_str()}.jpg")
         sheet.cell(7, 2, f"{rand_str()}.jpg")
@@ -215,6 +215,9 @@ def get_tests_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_ma
     else:
         for i, test in enumerate(tests):
             test = replace_none_to_space(test)
+            test.name = "".join(filter(lambda x: x in "йцукенгшщзхфывапролдячсмитьбюЙЦУКЕНГШЩЗХЪъФЫВАПРОЛДЖЭЯЧСМИТЬБЮqwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLXCVBNM",test.name))
+            if not test.name:
+                test.name = rand_str()
             sheet = wb.create_sheet(test.name)
             sheet.cell(1, 1, str(i+1))
             sheet.cell(1, 2, "Тест")
@@ -303,6 +306,9 @@ def get_theory_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_m
     else:
         for i, theory in enumerate(theorys):
             theory = replace_none_to_space(theory)
+            theory.name = "".join(filter(lambda x: x in "йцукенгшщзхфывапролдячсмитьбюЙЦУКЕНГШЩЗХЪъФЫВАПРОЛДЖЭЯЧСМИТЬБЮqwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLXCVBNM",theory.name))
+            if not theory.name:
+                theory.name = rand_str()
             sheet = wb.create_sheet(theory.name)
             sheet.cell(1, 1, str(i+1))
             sheet.cell(2, 1, "Название")
