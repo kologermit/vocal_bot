@@ -118,7 +118,7 @@ def init_user(message: types.Message, db_manager: DBManager):
         user = copy.deepcopy(UserModel)
         user.telegram_id = message.from_user.id
         user.full_name = message.from_user.full_name
-        user.user_name = message.from_user.username
+        user.user_name = str(message.from_user.username)
         user.state = "start"
         user.first_message = datetime.datetime.now()
         db_manager.save_data(user)
