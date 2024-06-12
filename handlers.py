@@ -334,6 +334,16 @@ def theory_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_manag
         if theory.rowid not in user.accepted_theory:
             user.accepted_theory.append(theory.rowid)
             db_manager.save_data(user)
+        theorys = db_manager.find_data(TheoryModel)
+        if theory.rowid < len(theorys):
+            theory = theorys[theory.rowid]
+            confirm_theory = "<b>Теория пройдена✅</b>\n"
+            message = f"""<b>Следующая теория</b>\n\
+{confirm_theory if theory.rowid in user.accepted_theory else ''}\
+<b>{theory.name}</b>\n{theory.description}"""
+            markup = types.InlineKeyboardMarkup()
+            markup.add(types.InlineKeyboardButton("Изучить теорию", callback_data=json.dumps({"c": "theory", "id": theory.rowid})))
+            send_description(bot, user, message, theory.files, markup)
         return to_menu(bot, message, user, db_manager, theory_complete)
     
 def theory_next_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_manager: DBManager):
