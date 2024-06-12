@@ -306,7 +306,7 @@ def get_theory_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_m
         bot.send_message(user.telegram_id, "Теория отсутствует. Вот пример заполнения таблицы:")
     else:
         for i, theory in enumerate(theorys):
-            sheet_name = copy.deepcopy(theorys.name)
+            sheet_name = copy.deepcopy(theory.name)
             sheet_name = "".join(filter(lambda x: x in "йцукенгшщзхфывапролдячсмитьбюЙЦУКЕНГШЩЗХЪъФЫВАПРОЛДЖЭЯЧСМИТЬБЮqwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLXCVBNM",sheet_name))
             if not sheet_name:
                 sheet_name = rand_str()
