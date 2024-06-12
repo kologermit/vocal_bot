@@ -334,9 +334,9 @@ def theory_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_manag
         if theory.rowid not in user.accepted_theory:
             user.accepted_theory.append(theory.rowid)
             db_manager.save_data(user)
-        theorys = db_manager.find_data(TheoryModel, condition="rowid=?", condition_data=[theory.rowid+1])
-        if theorys:
-            theory = theorys[0]
+        theorys = db_manager.find_data(TheoryModel)
+        if len(theorys) < theory.rowid:
+            theory = theorys[theory.rowid]
             confirm_theory = "<b>Теория пройдена✅</b>\n"
             message = f"""<b>Следующая теория</b>\n\\
 {confirm_theory if theory.rowid in user.accepted_theory else ''}\\
