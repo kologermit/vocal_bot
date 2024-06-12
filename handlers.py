@@ -335,6 +335,8 @@ def theory_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_manag
             user.accepted_theory.append(theory.rowid)
             db_manager.save_data(user)
         theorys = db_manager.find_data(TheoryModel)
+        print(theorys)
+        print(theory.rowid)
         if len(theorys) < theory.rowid:
             theory = theorys[theory.rowid]
             confirm_theory = "<b>Теория пройдена✅</b>\n"
