@@ -131,7 +131,7 @@ def get_users_table(bot: TeleBot, callback: types.CallbackQuery, user: Model, db
     sheet.cell(1, 9, "Текущий тест")
     for i in range(1, 10):
         sheet.column_dimensions[get_column_letter(i)].width = max(len(str(sheet.cell(1, i).value)), 10)
-    for i,  user in enumerate(db_manager.find_data(UserModel)):
+    for i, user in enumerate(db_manager.find_data(UserModel)):
         user = replace_none_to_space(user)
         sheet.cell(2+i, 1, user.telegram_id)
         sheet.cell(2+i, 2, user.user_name)
@@ -146,7 +146,7 @@ def get_users_table(bot: TeleBot, callback: types.CallbackQuery, user: Model, db
     filepath = "./tmp/files/users.xlsx"
     wb.save(filepath)
     wb.close()
-    bot.send_document(user.telegram_id, open(filepath, "rb"))
+    bot.send_document(callback.from_user.id, open(filepath, "rb"))
 
 def update_tests_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_manager: DBManager):
     user.state = "update_tests"
