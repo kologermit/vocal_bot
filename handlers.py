@@ -33,12 +33,14 @@ def registration_name(bot: TeleBot, message: types.Message, user: Model, db_mana
     user.state = "registration-class"
     db_manager.save_data(user)
     bot.send_message(user.telegram_id, "Теперь отправьте класс", reply_markup=types.ReplyKeyboardMarkup(resize_keyboard=True).add
-                     (*([types.KeyboardButton(str(i)) for i in range(1, 5)]+[types.KeyboardButton("Педагог")]), row_width=3))
+                     (*([types.KeyboardButton(str(i)) for i in range(1, 5)]+[types.KeyboardButton("Педагог"),  types.KeyboardButton("Родитель")]), row_width=3))
     return True
 
 def registration_class(bot: TeleBot, message: types.Message, user: Model, db_manager: DBManager):
     if message.text == "Педагог":
         user.grade = -1
+    elif message.text == "Родитель":
+        user.grade = -2
     elif message.text.isdigit() or not(1 <= int(message.text) <= 4):
         user.grade = int(message.text)
     else:
@@ -88,9 +90,13 @@ def to_theory(bot: TeleBot, message: types.Message, user: Model, db_manager: DBM
 
 def menu(bot: TeleBot, message: types.Message, user: Model, db_manager: DBManager):
     if message.text == menu_statistic_button:
+        if user.grade == -2:
+            user.grade = "Родитель"
+        elif user.grade == -1:
+            user.grade = "Педагог"
         bot.reply_to(message, f"""<b><u>Статистика:</u></b>
 <b>Имя: </b><i>{user.full_name}</i>
-<b>Класс: </b><i>{'Педагог' if user.grade == -1 else user.grade}</i>
+<b>Класс: </b><i>{user.grade}</i>
 <b>Пройдено тем: </b><i>{len(user.accepted_theory)}</i>
 <b>Решено тестов: </b><i>{len(user.accepted_tests)}</i>
 <b>Первое сообщение: </b><i>{user.first_message}</i>""", parse_mode="HTML")
