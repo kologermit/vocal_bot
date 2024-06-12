@@ -366,7 +366,7 @@ def theory_next_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_
     message = send_description(bot, user, message, next_paragraph["files"], markup)
     if len(theory.paragraphs) == next_paragraph["id"]+1:
         theorys = db_manager.find_data(TheoryModel)
-        if len(theorys) < theory.rowid:
+        if theory.rowid < len(theorys):
             theory = theorys[theory.rowid]
             confirm_theory = "<b>Теория пройдена✅</b>\n"
             message = f"""<b>Следующая теория</b>\n\\
