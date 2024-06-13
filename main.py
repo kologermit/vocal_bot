@@ -8,6 +8,7 @@ def main():
     db_manager = DBManager(config.DB_FILENAME)
     db_manager.init_tables(models.all_models)
     bot = TeleBot(config.TOKEN)
+    logging.info(bot.get_me())
     handlers.init(bot, db_manager)
     handlers.loop(bot)
 
