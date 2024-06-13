@@ -166,6 +166,7 @@ def testing_cb(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_mana
         name=task["name"],
         description=task["description"]
     )
+    bot.send_message(user.telegram_id, "Тест", reply_markup=types.ReplyKeyboardMarkup(resize_keyboard=True).add(types.KeyboardButton(end_test_button)))
     send_description(bot, user, message, task["files"], markup)
 
 def task_ans(bot: TeleBot, callback: types.CallbackQuery, user: Model, db_manager: DBManager):
